@@ -1,4 +1,4 @@
-package me.winsh.scalaneurons.core
+package me.winsh.scalaneurons
 
 import scala.util.Random
 
@@ -20,7 +20,7 @@ object BasicNeuronLink {
   }
 }
 
-case class NeuronLink(
+class NeuronLink(
   var input: Double = 0.0,
   var weight: Double = BasicNeuronLink.nextRandomValue(-1.0, 1.0)) extends BasicNeuronLink {
   
