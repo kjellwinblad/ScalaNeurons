@@ -13,33 +13,34 @@ import me.winsh.scalaneurons.HyperbolicTangentAproxFunction
 abstract class FeedforwardNetwork(
   val nrOfInputSlots: Int,
   initLayers: Iterable[Iterable[NeedsTrigeringNeuron]],
-  weightInitializer: () => Double) extends Network {
+  weightInitializer: () => Double,
+  enableBiasInputs: Boolean = true) extends Network {
 
-	  //Public Declarations
+  //Public Declarations
 
   val nrOfOutputSlots = initLayers.last.size
 
   val layers = initLayers.map(_.toList).toList
-  
-    //Private Declarations
+
+  //Private Declarations
 
   private val inputLinks = Array.fill(nrOfInputSlots)(new NeuronLink(weight = 1.0))
 
   private val inputNeurons = Array.fill(nrOfInputSlots)(new Neuron(LinearFunction()))
 
   val outputLinks = Array.fill(initLayers.last.size)(new NeuronLink(weight = 1.0))
-	
+
   //Initialization
 
   require(initLayers.size > 0, "A Feedforward network needs at least one layer.")
 
   Network.connectLayers(inputNeurons.toList :: layers, weightInitializer)
-  
-  //Add bias link to all neurons
 
-  layers.foreach(_.foreach(_.addInputLink(new NeuronLink(input=1.0,weight=weightInitializer()))))
-  
-    inputNeurons.zipWithIndex.foreach { (param) =>
+  //Add bias link to all neurons
+  if (enableBiasInputs)
+    layers.foreach(_.foreach(_.addInputLink(new NeuronLink(input = 1.0, weight = weightInitializer()))))
+
+  inputNeurons.zipWithIndex.foreach { (param) =>
     val index = param._2
     val neuron = param._1
     neuron.addInputLink(inputLinks(index))
@@ -50,33 +51,33 @@ abstract class FeedforwardNetwork(
     val neuron = param._1
     neuron.addOutputLink(outputLinks(index))
   }
-  
-//Methods
+
+  //Methods
 
   def setInput(inputNr: Int, value: Double): Unit = {
     inputLinks(inputNr).input = value
     inputNeurons(inputNr).trigger()
     layers.foreach(_.foreach(_.trigger()))
-  } 
+  }
 
   def input_=(input: Iterable[Double]): Unit = input.zipWithIndex.foreach { param =>
     inputLinks(param._2).input = param._1
     inputNeurons(param._2).trigger()
     layers.foreach(_.foreach(_.trigger()))
   }
-  
+
   def input = inputLinks.map(_.input)
 
   def output(outputNr: Int): Double = outputLinks(outputNr).output
 
   def getOutput: Array[Double] = outputLinks.map(_.output)
 
-  def eval(in:Iterable[Double]):Iterable[Double]={
-	  input=in
-	getOutput  
+  def eval(in: Iterable[Double]): Iterable[Double] = {
+    input = in
+    getOutput
   }
-  
-} 
+
+}
 
 object FeedforwardNetwork {
 
